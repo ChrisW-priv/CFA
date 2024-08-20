@@ -217,7 +217,11 @@ def sum_all_ledger_items(n_day, ledger_items: ledger_items_type):
     return result
 
 
-def make_pretty_plot(df: pd.DataFrame):
+def make_pretty_plot(df: pd.DataFrame, exclude: set = None):
+    if exclude is None:
+        exclude = set()
+    exclude.add("date")
+
     plt.ylabel('money in the pocket', fontsize=12)
     plt.xlabel('dates')
     months = mdates.MonthLocator(interval=1, bymonthday=-1)
@@ -225,9 +229,11 @@ def make_pretty_plot(df: pd.DataFrame):
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     plt.xticks(rotation=45, ha='right')
     for column in df.columns:
-        if column == 'date':
+        if column in exclude:
             continue
-        plt.plot(df['date'], df[column])
+        plt.plot(df['date'], df[column], label=column)
+
+    plt.legend()
     plt.show()
 
 
