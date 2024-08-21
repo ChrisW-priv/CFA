@@ -23,7 +23,7 @@ def principal_amount_calc(percent, years, n_times_during_year=1):
     :param n_times_during_year:
     :return:
     """
-    ACCURED = 1000
+    ACCURED = 1
     exponent = 1 + (percent / 100) / n_times_during_year
     periods = (years*n_times_during_year)
     multiplier = exponent ** periods
@@ -39,7 +39,7 @@ def rate_of_interest_calc(percent, years, n_times_during_year=1):
     :param n_times_during_year:
     :return:
     """
-    ORIGINAL = 1000
+    ORIGINAL = 1
     accured = ORIGINAL * (1 + (percent / 100))
     a_div_p = accured / ORIGINAL
     periods = (years * n_times_during_year)
