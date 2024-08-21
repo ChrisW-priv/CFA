@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "simcfa"
+version = "0.1.0"
+description = "Project created to allow easy simulation of cash flow and total networth based on some behaviour"
+authors = ["kwatras <krzysztof.watras@axpo.pl>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "SimCFA", from = "src"}]
+
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pandas = "^2.2.2"
+matplotlib = "^3.9.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

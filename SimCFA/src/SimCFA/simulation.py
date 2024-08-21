@@ -1,10 +1,10 @@
-from LedgerItem import *
-from datetime import date
-from events import Events
-from typing import List
 from collections import defaultdict
-from functional import apply_kwarg
+from datetime import date
+from typing import List
 
+from SimCFA.events import Events
+from SimCFA.functional import apply_kwarg
+from SimCFA.LedgerItem import *
 
 ledger_items_type = defaultdict[str, List[LedgerItem]]
 
@@ -17,7 +17,7 @@ class Simulation:
         self.ledger_items = defaultdict(list)
         cash_properties = LedgerItemProperties(0, 0)
         cash = Cash(cash_properties)
-        self.ledger_items['cash'].append(cash)
+        self.ledger_items["cash"].append(cash)
         self.events = Events()
         self.n_days = n_days
         self.start_date = start_date
@@ -26,7 +26,7 @@ class Simulation:
         self.post_event("simulation_started", vars(self))
         for day in range(self.n_days):
             x = vars(self)
-            x.update({'n_day': day})
+            x.update({"n_day": day})
             self.post_event("day_started", x)
             self.post_event("day_ended", x)
         self.post_event("simulation_ended", vars(self))

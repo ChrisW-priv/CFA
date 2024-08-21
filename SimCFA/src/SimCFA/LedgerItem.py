@@ -1,10 +1,11 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto
-from abc import ABC, abstractmethod
+
 from dateutil.relativedelta import relativedelta
 
-from compound_interest_calculator import compound_interest_calc
-from builder import GenericBuilder
+from SimCFA.builder import GenericBuilder
+from SimCFA.compound_interest_calculator import compound_interest_calc
 
 
 class LedgerItemType(Enum):
@@ -16,7 +17,9 @@ class LedgerItemType(Enum):
 class LedgerItemProperties:
     quantity: int
     acquired_on: int  # int number of simulation day
-    item_type: LedgerItemType = LedgerItemType.Asset  # helper category to allow easy grouping in the future
+    item_type: LedgerItemType = (
+        LedgerItemType.Asset
+    )  # helper category to allow easy grouping in the future
 
 
 @dataclass
@@ -53,7 +56,9 @@ class Bond(LedgerItem):
         DAYS_YEAR = 365
         days_as_year_float = days_passed / DAYS_YEAR
 
-        x = compound_interest_calc(self.percent, days_as_year_float, self.capitalisation_periods)
+        x = compound_interest_calc(
+            self.percent, days_as_year_float, self.capitalisation_periods
+        )
         cash_received = x * self.price
         return (cash_received - use_penalty) * self.properties.quantity
 
@@ -71,11 +76,10 @@ class Bond(LedgerItem):
 bond_builder = GenericBuilder(Bond)
 
 year_bond_builder = (
-    bond_builder
-    .set('percent', 6)
-    .set('duration', relativedelta(years=1))
-    .set('rebuy_cost', 99_90)
-    .set('pre_maturity_buy_back_penalty', 70)
-    .set('price', 100_00)
-    .set('capitalisation_periods', 100_00)
+    bond_builder.set("percent", 6)
+    .set("duration", relativedelta(years=1))
+    .set("rebuy_cost", 99_90)
+    .set("pre_maturity_buy_back_penalty", 70)
+    .set("price", 100_00)
+    .set("capitalisation_periods", 100_00)
 )

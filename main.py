@@ -1,6 +1,6 @@
-from simulation_procedures import *
-from simulation import Simulation
-from LedgerItem import year_bond_builder
+from SimCFA.LedgerItem import year_bond_builder
+from SimCFA.simulation import Simulation
+from SimCFA.simulation_procedures import *
 
 
 def main():
@@ -30,5 +30,5 @@ def main():
     simulation.simulate()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

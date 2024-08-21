@@ -9,8 +9,8 @@ def compound_interest_calc(percent, years, n_times_during_year=1):
     """
     ORIGINAL = 1
     exponent = 1 + (percent / 100) / n_times_during_year
-    periods = (years*n_times_during_year)
-    multiplier = exponent ** periods
+    periods = years * n_times_during_year
+    multiplier = exponent**periods
     return ORIGINAL * multiplier
 
 
@@ -25,8 +25,8 @@ def principal_amount_calc(percent, years, n_times_during_year=1):
     """
     ACCURED = 1
     exponent = 1 + (percent / 100) / n_times_during_year
-    periods = (years*n_times_during_year)
-    multiplier = exponent ** periods
+    periods = years * n_times_during_year
+    multiplier = exponent**periods
     return ACCURED / multiplier
 
 
@@ -42,9 +42,9 @@ def rate_of_interest_calc(percent, years, n_times_during_year=1):
     ORIGINAL = 1
     accured = ORIGINAL * (1 + (percent / 100))
     a_div_p = accured / ORIGINAL
-    periods = (years * n_times_during_year)
+    periods = years * n_times_during_year
     exponent = 1 / periods
-    x = a_div_p ** exponent
+    x = a_div_p**exponent
     x -= 1
     x *= n_times_during_year
     return x
