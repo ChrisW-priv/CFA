@@ -150,7 +150,7 @@ def create_draw_simulation_run(access_state_fn):
     def inner(start_date: date, **kwargs):
         days, items = access_state_fn()
         dates = map(lambda x: convert_int_to_date(x, start_date), days)
-        dates_labeled = [{"date": _date} for _date in dates]
+        dates_labeled = [{"date": _date, "n_day": n_day} for n_day, _date in zip(days, dates)]
 
         df_dates = pd.DataFrame.from_records(dates_labeled)
         df_dates["date"] = pd.to_datetime(df_dates["date"])
@@ -174,10 +174,10 @@ def sum_all_ledger_items(n_day, ledger_items: ledger_items_type):
     return result
 
 
-def make_pretty_plot(df: pd.DataFrame, exclude: set = None):
+def make_pretty_plot(df: pd.DataFrame, exclude: set[str] = None):
     if exclude is None:
         exclude = set()
-    exclude.add("date")
+    exclude = exclude.union({"date", "n_day"})
 
     plt.ylabel("money in the pocket", fontsize=12)
     plt.xlabel("dates")
@@ -191,7 +191,9 @@ def make_pretty_plot(df: pd.DataFrame, exclude: set = None):
         plt.plot(df["date"], df[column], label=column)
 
     plt.legend()
-    plt.show()
+    plt.show(block=False)
+    plt.pause(0.01)
+    user_input = input()
 
 
 def log_item_acq_change(direction: str, item):
