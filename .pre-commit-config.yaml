@@ -6,7 +6,6 @@ repos:
         entry: autoflake .
         language: system
         types: [python]
-        args: ["--remove-all-unused-imports", "--remove-unused-variables", "--in-place", "--recursive", "."]
 
       - id: isort
         name: Run isort
