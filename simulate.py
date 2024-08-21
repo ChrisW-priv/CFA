@@ -1,10 +1,8 @@
 from LedgerItem import *
-from dateutil.relativedelta import relativedelta
 from datetime import date, timedelta
 import matplotlib.pyplot as plt
 from events import Events
 from typing import List
-from compound_interest_calculator import compound_interest_calc
 from copy import deepcopy
 from collections import defaultdict
 import matplotlib.dates as mdates
@@ -12,7 +10,6 @@ import pandas as pd
 
 START_DATE = date(2025, 1, 1)
 
-BOND_PRICE = 100_00
 
 ledger_items_type = defaultdict[str, List[LedgerItem]]
 
@@ -44,7 +41,9 @@ class Simulation:
         # could be rewritten to support multiple bank accounts
         # for now just leave one
         self.ledger_items = defaultdict(list)
-        self.ledger_items['cash'].append(Cash(0, 0))
+        cash_properties = LedgerItemProperties(0, 0)
+        cash = Cash(cash_properties)
+        self.ledger_items['cash'].append(cash)
         self.events = Events()
         self.n_days = n_days
 
@@ -105,7 +104,7 @@ def create_delayed_event(event_type: str, n_day_trigger: int, data: dict):
 
 def change_cash_in_place(ledger_items: ledger_items_type, by_how_much: int, index: int = 0):
     cash_item = ledger_items['cash'][0]
-    cash_item.quantity += by_how_much
+    cash_item.properties.quantity += by_how_much
     ledger_items['cash'][index] = cash_item
 
 
@@ -127,7 +126,8 @@ def create_simulate_monthly_bond_buy(quantity: int, bond_builder: GenericBuilder
         if day_date.day != day_apply:
             return
         # build and add to list of assets
-        bond_item = bond_builder.set('quantity', quantity).set('acquired_on', n_day).build()
+        properties = LedgerItemProperties(quantity, n_day)
+        bond_item = bond_builder.set('properties', properties).build()
         ledger_items['bonds'].append(bond_item)
         events.post_event("ledger_item_acquired", {"item": bond_item})
 
@@ -182,7 +182,7 @@ def create_simulation_state_save():
 def get_final_cash_state(ledger_items: ledger_items_type, **kwargs):
     total = 0
     for item in ledger_items['cash']:
-        total += item.quantity
+        total += item.properties.quantity
     print("Total amount of cash:", total)
 
 
@@ -237,7 +237,7 @@ def make_pretty_plot(df: pd.DataFrame, exclude: set = None):
     plt.show()
 
 
-def log_item_acq_change(direction, item: LedgerItem):
+def log_item_acq_change(direction: str, item):
     assert direction in ('acquired', 'sold')
     print(f"Ledger item {direction}! Item: {item}")
 

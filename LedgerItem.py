@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from abc import ABC
+from abc import ABC, abstractmethod
 from dateutil.relativedelta import relativedelta
 
 from compound_interest_calculator import compound_interest_calc
@@ -13,41 +13,38 @@ class LedgerItemType(Enum):
 
 
 @dataclass
-class LedgerItem(ABC):
+class LedgerItemProperties:
     quantity: int
     acquired_on: int  # int number of simulation day
     item_type: LedgerItemType = LedgerItemType.Asset  # helper category to allow easy grouping in the future
 
-    def get_value(self, n_day: int):
-        return self.quantity
+
+@dataclass
+class LedgerItem(ABC):
+    properties: LedgerItemProperties
+
+    @abstractmethod
+    def get_value(self, n_day: int) -> int:
+        """will return a value of the object if it was to be sold on the very day passed as param"""
 
 
+@dataclass
 class Cash(LedgerItem):
-    ...
+    def get_value(self, n_day: int) -> int:
+        return self.properties.quantity
 
 
+@dataclass
 class Bond(LedgerItem):
-    def __init__(
-            self,
-            quantity, acquired_on,
-            percent: int,
-            duration: relativedelta,
-            rebuy_cost: int,
-            pre_maturity_buy_back_penalty: int,
-            price: int = 100_00,
-            capitalisation_periods: int = 1
-    ):
-        self.quantity = quantity
-        self.acquired_on = acquired_on
-        self.percent = percent
-        self.duration = duration
-        self.rebuy_cost = rebuy_cost
-        self.pre_maturity_buy_back_penalty = pre_maturity_buy_back_penalty
-        self.price = price
-        self.capitalisation_periods = capitalisation_periods
+    percent: int
+    duration: relativedelta
+    rebuy_cost: int
+    pre_maturity_buy_back_penalty: int
+    price: int = 100_00
+    capitalisation_periods: int = 1
 
     def get_value(self, n_day: int):
-        days_passed = n_day - self.acquired_on
+        days_passed = n_day - self.properties.acquired_on
         use_penalty = self.pre_maturity_buy_back_penalty
         if days_passed > self.max_duration_in_days:
             days_passed = self.max_duration_in_days
@@ -56,10 +53,9 @@ class Bond(LedgerItem):
         DAYS_YEAR = 365
         days_as_year_float = days_passed / DAYS_YEAR
 
-        CONST = 1000
         x = compound_interest_calc(self.percent, days_as_year_float, self.capitalisation_periods)
-        cash_received = x / CONST * self.quantity * self.price
-        return cash_received - use_penalty
+        cash_received = x * self.price
+        return (cash_received - use_penalty) * self.properties.quantity
 
     @property
     def max_duration_in_days(self):
