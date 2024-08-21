@@ -7,7 +7,7 @@ def compound_interest_calc(percent, years, n_times_during_year=1):
     :param n_times_during_year:
     :return:
     """
-    ORIGINAL = 1000
+    ORIGINAL = 1
     exponent = 1 + (percent / 100) / n_times_during_year
     periods = (years*n_times_during_year)
     multiplier = exponent ** periods
