@@ -17,9 +17,7 @@ class LedgerItemType(Enum):
 class LedgerItemProperties:
     quantity: int
     acquired_on: int  # int number of simulation day
-    item_type: LedgerItemType = (
-        LedgerItemType.Asset
-    )  # helper category to allow easy grouping in the future
+    item_type: LedgerItemType = LedgerItemType.Asset  # helper category to allow easy grouping in the future
 
 
 @dataclass
@@ -56,9 +54,7 @@ class Bond(LedgerItem):
         DAYS_YEAR = 365
         days_as_year_float = days_passed / DAYS_YEAR
 
-        x = compound_interest_calc(
-            self.percent, days_as_year_float, self.capitalisation_periods
-        )
+        x = compound_interest_calc(self.percent, days_as_year_float, self.capitalisation_periods)
         cash_received = x * self.price
         return (cash_received - use_penalty) * self.properties.quantity
 

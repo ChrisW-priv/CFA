@@ -49,17 +49,13 @@ def create_delayed_event(event_type: str, n_day_trigger: int, data: dict):
     return apply_kwarg(inner)
 
 
-def change_cash_in_place(
-    ledger_items: ledger_items_type, by_how_much: int, index: int = 0
-):
+def change_cash_in_place(ledger_items: ledger_items_type, by_how_much: int, index: int = 0):
     cash_item = ledger_items["cash"][0]
     cash_item.properties.quantity += by_how_much
     ledger_items["cash"][index] = cash_item
 
 
-def create_simulate_monthly_bond_buy(
-    quantity: int, bond_builder: GenericBuilder, day_stop=400, day_apply=10
-):
+def create_simulate_monthly_bond_buy(quantity: int, bond_builder: GenericBuilder, day_stop=400, day_apply=10):
     """
     Each month, we will buy N bonds lasting some relative delta of time (in months)
 
@@ -172,10 +168,7 @@ def create_draw_simulation_run(access_state_fn):
 
 
 def sum_all_ledger_items(n_day, ledger_items: ledger_items_type):
-    result = {
-        key: sum(item.get_value(n_day) for item in ledger_items[key])
-        for key in ledger_items
-    }
+    result = {key: sum(item.get_value(n_day) for item in ledger_items[key]) for key in ledger_items}
     sum_all = sum(result[key] for key in result)
     result["net_worth"] = sum_all
     return result
