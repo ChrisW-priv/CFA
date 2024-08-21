@@ -1,77 +1,16 @@
-from LedgerItem import *
 from datetime import date, timedelta
-import matplotlib.pyplot as plt
+from simulation import ledger_items_type
 from events import Events
-from typing import List
-from copy import deepcopy
-from collections import defaultdict
+from LedgerItem import GenericBuilder, LedgerItemProperties, LedgerItem
+from functional import apply, apply_kwarg
+import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pandas as pd
-
-START_DATE = date(2025, 1, 1)
-
-
-ledger_items_type = defaultdict[str, List[LedgerItem]]
+from copy import deepcopy
 
 
-def is_leap_year(year: int):
-    return (year % 400 == 0) or (year % 100 != 0) and (year % 4 == 0)
-
-
-def days_in_a_year(year: int = 1):
-    return 365 + int(is_leap_year(year))
-
-
-def apply(fn):
-    def inner(args):
-        return fn(*args)
-    return inner
-
-
-def apply_kwarg(fn):
-    def inner(kwargs):
-        return fn(**kwargs)
-    return inner
-
-
-class Simulation:
-
-    def __init__(self, n_days=1000):
-        # simulation has to have at least one cash item
-        # could be rewritten to support multiple bank accounts
-        # for now just leave one
-        self.ledger_items = defaultdict(list)
-        cash_properties = LedgerItemProperties(0, 0)
-        cash = Cash(cash_properties)
-        self.ledger_items['cash'].append(cash)
-        self.events = Events()
-        self.n_days = n_days
-
-    def simulate(self):
-        self.post_event("simulation_started", vars(self))
-        for day in range(self.n_days):
-            self.post_event("day_started", day)
-            self.post_event("day_ended", day)
-        self.post_event("simulation_ended", vars(self))
-
-    def add_event_listener_applied(self, event_type, fn):
-        self.events.subscribe(event_type, apply_kwarg(fn))
-
-    def add_event_listener_raw(self, event_type, fn):
-        self.events.subscribe(event_type, fn)
-
-    def post_event(self, event_type, day):
-        data = {
-            "ledger_items": self.ledger_items,
-            "events": self.events,
-            "n_days": self.n_days,
-            "n_day": day,
-        }
-        self.events.post_event(event_type, data)
-
-
-def convert_int_to_date(n_day: int) -> date:
-    return START_DATE + timedelta(days=n_day)
+def convert_int_to_date(n_day: int, start_date) -> date:
+    return start_date + timedelta(days=n_day)
 
 
 def create_simulate_monthly_cash_move(quantity: int, day_apply=10):
@@ -82,8 +21,8 @@ def create_simulate_monthly_cash_move(quantity: int, day_apply=10):
     :return:
     """
 
-    def inner(ledger_items: ledger_items_type, n_day: int, events: Events, **kwargs) -> None:
-        day_date = convert_int_to_date(n_day)
+    def inner(ledger_items: ledger_items_type, n_day: int, events: Events, start_date, **kwargs) -> None:
+        day_date = convert_int_to_date(n_day, start_date)
         if day_date.day != day_apply:
             return
         change_cash_in_place(ledger_items, quantity)
@@ -119,10 +58,10 @@ def create_simulate_monthly_bond_buy(quantity: int, bond_builder: GenericBuilder
     :return:
     """
 
-    def inner(ledger_items: ledger_items_type, n_day: int, events: Events, **kwargs) -> None:
+    def inner(ledger_items: ledger_items_type, n_day: int, events: Events, start_date: date, **kwargs) -> None:
         if n_day >= day_stop:
             return
-        day_date = convert_int_to_date(n_day)
+        day_date = convert_int_to_date(n_day, start_date)
         if day_date.day != day_apply:
             return
         # build and add to list of assets
@@ -138,8 +77,9 @@ def create_simulate_monthly_bond_buy(quantity: int, bond_builder: GenericBuilder
 
         # create trigger to buy it back after certain time delta
         duration = bond_item.duration
-        years = duration.years
-        bond_duration_in_days = years * days_in_a_year()
+        expiry_date = day_date + duration
+        diff = expiry_date - day_date
+        bond_duration_in_days = diff.days
         trigger_day = n_day + bond_duration_in_days
         data = {
             "item": bond_item,
@@ -187,9 +127,9 @@ def get_final_cash_state(ledger_items: ledger_items_type, **kwargs):
 
 
 def create_draw_simulation_run(access_state_fn):
-    def inner(**kwargs):
+    def inner(start_date: date, **kwargs):
         days, items = access_state_fn()
-        dates = map(convert_int_to_date, days)
+        dates = map(lambda x: convert_int_to_date(x, start_date), days)
         dates_labeled = [{"date": _date} for _date in dates]
 
         df_dates = pd.DataFrame.from_records(dates_labeled)
@@ -265,32 +205,3 @@ def log_cash_state_spent(*args, **kwargs):
     log_cash_state_change('spent', *args, **kwargs)
 
 
-def main():
-    steady_income = create_simulate_monthly_cash_move(5500_00)
-    life_costs = create_simulate_monthly_cash_move(-3000_00, 20)
-    save_state_fn, access_state_fn = create_simulation_state_save()
-    draw_simulation_run = create_draw_simulation_run(access_state_fn)
-    bonds_buy = create_simulate_monthly_bond_buy(100, year_bond_builder, 400, 25)
-    bonds_buy_back = create_bond_buy_back_for_cash()
-
-    simulation = Simulation()
-    simulation.add_event_listener_raw("log", print)
-    simulation.add_event_listener_applied("day_started", steady_income)
-    simulation.add_event_listener_applied("day_started", life_costs)
-    simulation.add_event_listener_applied("day_started", bonds_buy)
-    simulation.add_event_listener_applied("bond_buy_back", bonds_buy_back)
-
-    simulation.add_event_listener_applied("cash_received", log_cash_state_received)
-    simulation.add_event_listener_applied("cash_spent", log_cash_state_spent)
-    simulation.add_event_listener_applied("ledger_item_acquired", log_item_acquired)
-    simulation.add_event_listener_applied("ledger_item_sold", log_item_sold)
-
-    simulation.add_event_listener_applied("day_ended", save_state_fn)
-    simulation.add_event_listener_applied("simulation_ended", draw_simulation_run)
-    simulation.add_event_listener_applied("simulation_ended", get_final_cash_state)
-
-    simulation.simulate()
-
-
-if __name__ == '__main__':
-    main()
