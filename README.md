@@ -4,7 +4,7 @@ Project created to allow easy simulation of cash flow and total networth based o
 ## Start contributing
 
 ```bash
-git clone {url}
+git clone https://github.com/ChrisW-priv/CFA.git
 cd CFA
 poetry install
 pre-commit install
