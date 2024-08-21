@@ -4,7 +4,7 @@ from typing import List
 
 from SimCFA.events import Events
 from SimCFA.functional import apply_kwarg
-from SimCFA.LedgerItem import LedgerItem, LedgerItemProperties, Cash
+from SimCFA.LedgerItem import Cash, LedgerItem, LedgerItemProperties
 
 ledger_items_type = defaultdict[str, List[LedgerItem]]
 
