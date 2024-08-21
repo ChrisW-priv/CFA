@@ -1,3 +1,12 @@
 .idea
-.venv
+venv
 *.lock
+.git
+__pycache__
+build
+dist
+.venv
+.tox
+.mypy_cache
+.pytest_cache
+*/migrations
