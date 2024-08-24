@@ -4,8 +4,8 @@ from dataclasses import dataclass
 
 @dataclass
 class Events:
-    # Default value of the dictionary will be list
-    subscribers = defaultdict(list)
+    def __init__(self) -> None:
+        self.subscribers = defaultdict(list)
 
     def subscribe(self, event_type: str, fn):
         self.subscribers[event_type].append(fn)

@@ -7,7 +7,7 @@ import pandas as pd
 
 from SimCFA.events import Events
 from SimCFA.functional import apply, apply_kwarg
-from SimCFA.LedgerItem import GenericBuilder, LedgerItem, LedgerItemProperties
+from SimCFA.LedgerItem import Cash, GenericBuilder, LedgerItem, LedgerItemProperties
 from SimCFA.simulation import ledger_items_type
 
 
@@ -192,8 +192,6 @@ def make_pretty_plot(df: pd.DataFrame, exclude: set[str] = None):
 
     plt.legend()
     plt.show(block=False)
-    plt.pause(0.01)
-    user_input = input()
 
 
 def log_item_acq_change(direction: str, item):
@@ -222,3 +220,9 @@ def log_cash_state_received(*args, **kwargs):
 
 def log_cash_state_spent(*args, **kwargs):
     log_cash_state_change("spent", *args, **kwargs)
+
+
+def append_empty_cash(ledger_items, **kwargs):
+    cash_properties = LedgerItemProperties(0, 0)
+    cash = Cash(cash_properties)
+    ledger_items["cash"].append(cash)

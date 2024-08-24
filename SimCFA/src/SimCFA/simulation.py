@@ -4,32 +4,26 @@ from typing import List
 
 from SimCFA.events import Events
 from SimCFA.functional import apply_kwarg
-from SimCFA.LedgerItem import Cash, LedgerItem, LedgerItemProperties
+from SimCFA.LedgerItem import LedgerItem
 
 ledger_items_type = defaultdict[str, List[LedgerItem]]
 
 
 class Simulation:
     def __init__(self, n_days=1000, start_date=date(2025, 1, 1)):
-        # simulation has to have at least one cash item
-        # could be rewritten to support multiple bank accounts
-        # for now just leave one
         self.ledger_items = defaultdict(list)
-        cash_properties = LedgerItemProperties(0, 0)
-        cash = Cash(cash_properties)
-        self.ledger_items["cash"].append(cash)
         self.events = Events()
         self.n_days = n_days
         self.start_date = start_date
 
     def simulate(self):
-        self.post_event("simulation_started", vars(self))
+        kwargs = vars(self)
+        self.post_event("simulation_started", kwargs)
         for day in range(self.n_days):
-            x = vars(self)
-            x.update({"n_day": day})
-            self.post_event("day_started", x)
-            self.post_event("day_ended", x)
-        self.post_event("simulation_ended", vars(self))
+            kwargs["n_day"] = day
+            self.post_event("day_started", kwargs)
+            self.post_event("day_ended", kwargs)
+        self.post_event("simulation_ended", kwargs)
 
     def add_event_listener_applied(self, event_type, fn):
         self.events.subscribe(event_type, apply_kwarg(fn))
