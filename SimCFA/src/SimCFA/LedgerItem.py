@@ -7,6 +7,8 @@ from dateutil.relativedelta import relativedelta
 from SimCFA.builder import GenericBuilder
 from SimCFA.compound_interest_calculator import compound_interest_calc
 
+DAYS_YEAR = 365
+
 
 class LedgerItemType(Enum):
     Asset = auto()
@@ -51,7 +53,6 @@ class Bond(LedgerItem):
             days_passed = self.max_duration_in_days
             use_penalty = 0
 
-        DAYS_YEAR = 365
         days_as_year_float = days_passed / DAYS_YEAR
 
         x = compound_interest_calc(self.percent, days_as_year_float, self.capitalisation_periods)
@@ -79,3 +80,25 @@ year_bond_builder = (
     .set("price", 100_00)
     .set("capitalisation_periods", 100_00)
 )
+
+three_year_bond_builder = (
+    bond_builder.set("percent", 6.6)
+    .set("duration", relativedelta(years=3))
+    .set("rebuy_cost", 99_90)
+    .set("pre_maturity_buy_back_penalty", 70)
+    .set("price", 100_00)
+    .set("capitalisation_periods", 1)
+)
+
+
+@dataclass
+class Debt(LedgerItem):
+    percent: int
+
+    def get_value(self, n_day: int) -> int:
+        acq_on = self.properties.acquired_on
+        days_passed = n_day - acq_on
+        multiply = compound_interest_calc(self.percent, days_passed / DAYS_YEAR)
+        value = self.properties.quantity * multiply
+        return -value
+
