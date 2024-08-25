@@ -10,3 +10,7 @@ def apply_kwarg(fn):
         return fn(**kwargs)
 
     return inner
+
+
+def identity(x):
+    return x

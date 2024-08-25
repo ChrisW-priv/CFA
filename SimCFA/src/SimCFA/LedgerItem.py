@@ -101,4 +101,3 @@ class Debt(LedgerItem):
         multiply = compound_interest_calc(self.percent, days_passed / DAYS_YEAR)
         value = self.properties.quantity * multiply
         return -value
-
