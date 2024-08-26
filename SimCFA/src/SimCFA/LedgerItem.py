@@ -32,6 +32,14 @@ class LedgerItem(ABC):
 
 
 @dataclass
+class House(LedgerItem):
+    price: int
+
+    def get_value(self, n_day: int) -> int:
+        return self.price
+
+
+@dataclass
 class Cash(LedgerItem):
     def get_value(self, n_day: int) -> int:
         return self.properties.quantity

@@ -14,3 +14,8 @@ def apply_kwarg(fn):
 
 def identity(x):
     return x
+
+
+def empty(*args, **kwargs):
+    pass
+
