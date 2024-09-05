@@ -18,4 +18,3 @@ def identity(x):
 
 def empty(*args, **kwargs):
     pass
-
