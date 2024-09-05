@@ -8,15 +8,7 @@ import pandas as pd
 
 from SimCFA.events import Events
 from SimCFA.functional import apply, apply_kwarg, identity
-from SimCFA.LedgerItem import (
-    Bond,
-    Cash,
-    Debt,
-    House,
-    GenericBuilder,
-    LedgerItemProperties,
-    LedgerItemType,
-)
+from SimCFA.LedgerItem import Bond, Cash, Debt, GenericBuilder, House, LedgerItemProperties, LedgerItemType
 from SimCFA.simulation import ledger_items_type
 
 
@@ -31,6 +23,7 @@ def add_date_guard(fn, comparison_target: date | int, comparison_fn, transform_f
 
 
 def add_date_guard_exact_date(fn, date_trigger: date):
+    assert date_trigger, "Cannot create exact date guard with date_trigger as None"
     return add_date_guard(fn, date_trigger, eq)
 
 
@@ -47,38 +40,16 @@ def add_date_guard_ends_on(fn, end_date: date):
 
 
 def add_date_guard_date_between(fn, start_date: date, end_date: date):
-    assert (
-        start_date and end_date
-    ), "Cannot create a between date guard with one of the args as None, use start|end date guards instead"
-    guarded_start = add_date_guard_starts_on(fn, start_date)
-    guarded_between = add_date_guard_ends_on(guarded_start, end_date)
-    return guarded_between
+    if start_date is not None:
+        fn = add_date_guard_starts_on(fn, start_date)
+    if end_date is not None:
+        fn = add_date_guard_ends_on(fn, end_date)
+    return fn
 
 
 def add_month_day_date_guard(fn, day_trigger: int):
     transform_fn = lambda x: x.day
     return add_date_guard(fn, day_trigger, eq, transform_fn)
-
-
-def add_n_day_guard(fn, comparison_target: date | int, comparison_fn):
-    def inner(n_day, **kwargs):
-        if not comparison_fn(n_day, comparison_target):
-            return
-        fn(n_day=n_day, **kwargs)
-
-    return inner
-
-
-def add_n_day_guard_exact_n_day(fn, n_day_trigger: int):
-    return add_n_day_guard(fn, n_day_trigger, eq)
-
-
-def add_n_day_guard_ends_on(fn, n_day_trigger: int):
-    return add_n_day_guard(fn, n_day_trigger, le)
-
-
-def add_n_day_guard_starts_on(fn, n_day_trigger: int):
-    return add_n_day_guard(fn, n_day_trigger, ge)
 
 
 def create_simulate_monthly_cash_move(quantity: int, start_apply_date=None, end_apply_date=None, day_apply=10):
@@ -122,17 +93,19 @@ def create_cash_income(zipped_day_start_income, day_apply=10):
     return inner
 
 
-def create_delayed_event_on_n_day(event_type: str, n_day_trigger: int, data: dict):
+def create_delayed_event_on_date(event_type: str, date_trigger: date, data: dict):
     def inner(n_day: int, day_date: date, events: Events, **kwargs):
         data["n_day"] = n_day
         data["day_date"] = day_date
         events.post_event(event_type, data)
 
-    inner = add_n_day_guard_exact_n_day(inner, n_day_trigger)
+    inner = add_date_guard_exact_date(inner, date_trigger)
     return apply_kwarg(inner)
 
 
-def change_cash_in_place(ledger_items: ledger_items_type, by_how_much: int, events: Events, n_day=0, index: int=0, **kwargs):
+def change_cash_in_place(
+    ledger_items: ledger_items_type, by_how_much: int, events: Events, n_day=0, index: int = 0, **kwargs
+):
     cash_item = ledger_items["cash"][index]
     original_quantity = cash_item.properties.quantity
     quantity = original_quantity + by_how_much
@@ -146,7 +119,7 @@ def change_cash_in_place(ledger_items: ledger_items_type, by_how_much: int, even
             "ledger_items": ledger_items,
             "by_how_much": by_how_much,
             "new_state": quantity,
-            **kwargs
+            **kwargs,
         },
     )
     if by_how_much < 0 and quantity < 0:
@@ -158,7 +131,7 @@ def change_cash_in_place(ledger_items: ledger_items_type, by_how_much: int, even
                 "ledger_items": ledger_items,
                 "events": events,
                 "n_day": n_day,
-                **kwargs
+                **kwargs,
             },
         )
 
@@ -183,16 +156,14 @@ def create_bond_buy(quantity: int, bond_builder: GenericBuilder):
         # create trigger to buy it back after certain time delta
         duration = bond_item.duration
         expiry_date = day_date + duration
-        diff = expiry_date - day_date
-        bond_duration_in_days = diff.days
-        trigger_day = n_day + bond_duration_in_days
         data = {
             "item": bond_item,
             "events": events,
             "ledger_items": ledger_items,
         }
-        bond_buy_back_trigger = create_delayed_event_on_n_day("bond_buy_back", trigger_day, data)
+        bond_buy_back_trigger = create_delayed_event_on_date("bond_buy_back", expiry_date, data)
         events.subscribe("day_started", bond_buy_back_trigger)
+
     return inner
 
 
@@ -280,7 +251,7 @@ def make_pretty_plot(df: pd.DataFrame, exclude: set[str] = None):
 
     plt.ylabel("money in the pocket", fontsize=12)
     plt.xlabel("dates")
-    months = mdates.MonthLocator(interval=1, bymonthday=-1)
+    months = mdates.MonthLocator(interval=12, bymonthday=-1)
     plt.gca().xaxis.set_major_locator(months)
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
     plt.xticks(rotation=45, ha="right")
@@ -295,7 +266,7 @@ def make_pretty_plot(df: pd.DataFrame, exclude: set[str] = None):
     user_input = input()
 
 
-def create_append_ledger_item(quantity=0, acquired_on=0, ledger_item_name='cash', ledger_item=Cash(None)):
+def create_append_ledger_item(quantity=0, acquired_on=0, ledger_item_name="cash", ledger_item=Cash(None)):
     def inner(ledger_items, **kwargs):
         properties = LedgerItemProperties(quantity, acquired_on)
         ledger_item.properties = properties
@@ -331,9 +302,10 @@ def ignore_debt():
             "debit_level": debit_level,
             "n_day": n_day,
             "item": debt_item,
-            **kwargs
+            **kwargs,
         }
         events.post_event("debt_acquired", data)
+
     return inner
 
 
@@ -350,9 +322,10 @@ def create_debt_with_interest():
             "debit_level": debit_level,
             "n_day": n_day,
             "item": debt_item,
-            **kwargs
+            **kwargs,
         }
         events.post_event("debt_acquired", data)
+
     return inner
 
 
@@ -360,9 +333,9 @@ def create_debt_payback_strategy(quantity_month):
     def inner(ledger_items, **kwargs):
         nonlocal quantity_month
 
-        if 'debt' not in ledger_items:
+        if "debt" not in ledger_items:
             return
-        debt_item_list = ledger_items['debt']
+        debt_item_list = ledger_items["debt"]
         # list of items to remove later, mutating the list in place is allways bad idea
         items_to_remove = []
         for item in debt_item_list:
@@ -375,16 +348,16 @@ def create_debt_payback_strategy(quantity_month):
                 break
             if diff < 0:
                 change_cash_in_place(ledger_items, -(quantity_month + diff), **kwargs)
-                # we paid back more than the value of the debt, remove current, adjust how much money we have left and 
+                # we paid back more than the value of the debt, remove current, adjust how much money we have left and
                 # move on to the next one
                 items_to_remove.append(item)
                 quantity_month += diff
             if diff > 0:
                 change_cash_in_place(ledger_items, -quantity_month, **kwargs)
-                # still, the debt is there, we just paid of some of it 
+                # still, the debt is there, we just paid of some of it
                 item.properties.quantity = diff
         for item in items_to_remove:
-            ledger_items['debt'].remove(item)
+            ledger_items["debt"].remove(item)
+
     inner = add_month_day_date_guard(inner, 10)
     return inner
-
