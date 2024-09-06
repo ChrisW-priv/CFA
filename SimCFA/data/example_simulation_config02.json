@@ -5,56 +5,83 @@
 	},
 	"assets": [
 		{
-			"name": "6 year bond",
+			"name": "3 year bond",
 			"ID": 1,
 			"price": 100.00,
 			"duration": {
-				"years": 6
+				"years": 3
 			},
 			"value_calc_method": {
 				"method": "compound",
-				"%year": 2
+				"%year": 6.6
 			}
 		},
 		{
-			"name": "12 year bond",
+			"name": "house",
 			"ID": 2,
+			"price": 1000000.00,
+			"value_calc_method": {
+				"method": "const",
+				"%year": 1000000.00
+			}
+		},
+		{
+			"name": "ETF",
+			"ID": 3,
 			"price": 100.00,
-			"duration": {
-				"years": 12
-			},
 			"value_calc_method": {
 				"method": "compound",
-				"%year": 2.5
+				"%year": 7.0
 			}
 		}
 	],
 	"asset_handle_strategy": {
 		"instructions": [
 			{
-				"name": "buy 12 year",
+				"name": "buy etf",
+				"method": "buy",
+				"asset_id": 3,
+				"how_much": {
+					"reference": "cash",
+					"amount": "all"
+				},
+				"date_end": "2026-12-31"
+			},
+			{
+				"name": "sell etf",
+				"method": "sell",
+				"asset_id": 3,
+				"how_much": {
+					"reference": "count",
+					"amount": "all"
+				},
+				"date_apply": "2027-01-01"
+			},
+			{
+				"name": "buy house",
 				"method": "buy",
 				"asset_id": 2,
 				"how_much": {
-					"reference": "cash",
-					"amount": "all"
+					"reference": "count",
+					"amount": "1"
 				},
-				"date_end": "2033-12-31"
-			},
+				"date_apply": "2027-02-01"
+			}
+		]
+	},
+	"debt_handle_strategy": {
+		"instructions": [
 			{
-				"name": "buy 6 year",
-				"method": "buy",
-				"asset_id": 1,
+				"method": "pay-pup",
 				"how_much": {
 					"reference": "cash",
 					"amount": "all"
 				},
-				"date_start": "2034-01-01",
-				"date_end": "2045-01-01"
+				"apply_method": "monthly",
+				"apply_day": 27
 			}
 		]
 	},
-	"debt_handle_strategy": null,
 	"strategy_priority": "asset",
 	"incomes": [
 		{
@@ -66,8 +93,10 @@
 		{
 			"method": "step",
 			"zipped": [
-				{"start": "2023-01-01", "value": 500},
-				{"start": "2024-01-01", "value": 800}
+				{"start": "2024-01-01", "value": 4400},
+				{"start": "2025-01-01", "value": 5500},
+				{"start": "2026-01-01", "value": 7000},
+				{"start": "2027-01-01", "value": 10000}
 			],
 			"apply_duration": "monthly",
 			"applies_on": 10
@@ -76,7 +105,7 @@
 	"expenses": [
 		{
 			"method": "const",
-			"value": 0,
+			"value": 1000,
 			"apply_duration": "monthly",
 			"applies_on": 25
 		}
