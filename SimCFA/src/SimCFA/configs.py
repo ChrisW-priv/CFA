@@ -1,8 +1,9 @@
-from datetime import date
 import io
 import json
+from datetime import date
 
 import matplotlib.pyplot as plt
+from functional import identity, pipe
 
 from SimCFA.LedgerItem import DAYS_YEAR, three_year_bond_builder
 from SimCFA.simulation import Simulation
@@ -20,7 +21,6 @@ from SimCFA.simulation_procedures import (
     create_simulation_state_save,
     get_final_cash_state,
 )
-from functional import identity, pipe
 
 
 def show_fig(fig):
@@ -102,7 +102,7 @@ def load_in_json_config(filename: str):
 
 def build_simulation_from_config(config):
     # build simulation obj
-    sim_params = config['simulation_parameters']
+    sim_params = config["simulation_parameters"]
     simulation = Simulation(**sim_params)
 
     # build events

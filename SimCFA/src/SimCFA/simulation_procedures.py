@@ -2,10 +2,9 @@ from copy import deepcopy
 from datetime import date
 from operator import eq, ge, le
 
-import matplotlib.dates as mdates
-from matplotlib.ticker import MaxNLocator
 import matplotlib.pyplot as plt
 import pandas as pd
+from matplotlib.ticker import MaxNLocator
 
 from SimCFA.events import Events
 from SimCFA.functional import apply, apply_kwarg, identity

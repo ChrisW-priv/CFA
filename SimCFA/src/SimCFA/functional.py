@@ -25,4 +25,5 @@ def pipe(*unary_functions):
         for fn in unary_functions:
             value = fn(value)
         return value
+
     return inner
