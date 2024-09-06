@@ -1,4 +1,7 @@
 from datetime import date
+import io
+
+import matplotlib.pyplot as plt
 
 from SimCFA.LedgerItem import DAYS_YEAR, three_year_bond_builder
 from SimCFA.simulation import Simulation
@@ -18,6 +21,25 @@ from SimCFA.simulation_procedures import (
 )
 
 
+def show_fig(fig):
+    fig.show()
+    plt.pause(0.01)
+    x = input()
+
+
+def create_handle_fig_save_to_buff():
+    bio = io.BytesIO()
+
+    def save_fig_to_buffer(fig):
+        fig.savefig(bio, dpi=250, format="png")
+        return bio
+
+    def access_buffer():
+        return bio
+
+    return save_fig_to_buffer, access_buffer
+
+
 def main():
     income_map = [
         (date(2024, 2, 1), 4125_00),
@@ -31,7 +53,9 @@ def main():
     work_income = create_cash_income(income_map)
     life_costs = create_simulate_monthly_cash_move(-800_00, date(2024, 1, 1))
     save_state_fn, access_state_fn = create_simulation_state_save()
-    draw_simulation_run = create_draw_simulation_run(access_state_fn)
+    handle_fig = show_fig
+    # handle_fig, access_fig = create_handle_fig_save_to_buff()
+    draw_simulation_run = create_draw_simulation_run(access_state_fn, handle_fig)
     bonds_buy = create_bond_buy(1766, three_year_bond_builder)
     bonds_buy_on_date = create_bond_buy_on_date(bonds_buy, date(2023, 10, 26))
     bonds_buy_back = create_bond_buy_back_for_cash()

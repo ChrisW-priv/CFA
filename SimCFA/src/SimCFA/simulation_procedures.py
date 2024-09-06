@@ -3,6 +3,7 @@ from datetime import date
 from operator import eq, ge, le
 
 import matplotlib.dates as mdates
+from matplotlib.ticker import MaxNLocator
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -192,18 +193,14 @@ def create_bond_buy_back_for_cash():
 
 
 def create_simulation_state_save():
-    n_days = []
-    day_dates = []
-    ledger_items_saved = []
+    states = []
 
-    def save_state(ledger_items: ledger_items_type, n_day: int, day_date: date, **kwargs) -> None:
-        nonlocal n_days, ledger_items_saved, day_dates
-        n_days.append(n_day)
-        day_dates.append(day_date)
-        ledger_items_saved.append(deepcopy(ledger_items))
+    def save_state(**kwargs) -> None:
+        nonlocal states
+        states.append(deepcopy(kwargs))
 
     def access_state():
-        return n_days, ledger_items_saved, day_dates
+        return states
 
     return save_state, access_state
 
@@ -216,24 +213,11 @@ def get_final_cash_state(ledger_items: ledger_items_type, **kwargs):
     print(f"Total amount of cash: {total:.2f}")
 
 
-def create_draw_simulation_run(access_state_fn):
+def create_draw_simulation_run(access_state_fn, handle_fig):
     def inner(**kwargs):
-        days, items, day_dates = access_state_fn()
-        dates_labeled = [{"date": _date, "n_day": n_day} for n_day, _date in zip(days, day_dates)]
-
-        df_dates = pd.DataFrame.from_records(dates_labeled)
-        df_dates["date"] = pd.to_datetime(df_dates["date"])
-
-        applied = apply(sum_all_ledger_items)
-        zipped = zip(days, items)
-        summed_by_cat = list(map(applied, zipped))
-        print(f"Net worth at the end {summed_by_cat[-1]['net_worth']/100:.2f}")
-        df_values = pd.DataFrame.from_records(summed_by_cat)
-
-        df_result = pd.concat([df_dates, df_values], axis=1)
-        make_pretty_plot(df_result)
-        return df_result
-
+        states = access_state_fn()
+        fig = make_pretty_plot(states)
+        handle_fig(fig)
     return inner
 
 
@@ -244,26 +228,75 @@ def sum_all_ledger_items(n_day, ledger_items: ledger_items_type):
     return result
 
 
-def make_pretty_plot(df: pd.DataFrame, exclude: set[str] = None):
-    if exclude is None:
-        exclude = set()
-    exclude = exclude.union({"date", "n_day"})
+def process_ledger_items_on_sim_step(n_day: int, ledger_items: ledger_items_type):
+    result = {}
+    for key in ledger_items:
+        count_key = f"{key} - count"
+        value_key = f"{key} - value"
+        items_of_type = ledger_items[key]
+        result[count_key] = sum(item.properties.quantity for item in items_of_type)
+        result[value_key] = sum(item.get_value(n_day) for item in items_of_type)
+    return result
 
-    plt.ylabel("money in the pocket", fontsize=12)
-    plt.xlabel("dates")
-    months = mdates.MonthLocator(interval=12, bymonthday=-1)
-    plt.gca().xaxis.set_major_locator(months)
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
-    plt.xticks(rotation=45, ha="right")
+
+def make_df_from_state_list(simulation_states: list):
+    n_days = list(map(lambda state: state['n_day'], simulation_states))
+    dates = list(map(lambda state: state['day_date'], simulation_states))
+    ledger_items_list = list(map(lambda state: state['ledger_items'], simulation_states))
+    zipped = zip(n_days, ledger_items_list)
+
+    applied_process = apply(process_ledger_items_on_sim_step)
+    results = map(applied_process, zipped)
+    df = pd.DataFrame.from_records(results)
+    value_columns = tuple(col for col in df.columns if 'value' in col)
     for column in df.columns:
-        if column in exclude:
-            continue
-        plt.plot(df["date"], df[column], label=column)
+        if column in value_columns:
+            df[column] /= 100
+    df['cash - count'] /= 100
+    df.fillna(0, inplace=True)
+    df['date'] = dates
+    df['date'] = pd.to_datetime(df['date'])
+    return df
 
-    plt.legend()
-    plt.show(block=False)
-    plt.pause(0.01)
-    user_input = input()
+
+def make_pretty_plot(simulation_states: list):
+    """
+    Makes a pretty plot that will show the value of the ledger items on the main plot
+    and count of each below on smaller scale plots.
+    Current plot aspect ratio is full size for value and 1/n_types for each type of ledger item
+
+    :param simulation_states:
+    :return:
+    """
+    df = make_df_from_state_list(simulation_states)
+    value_columns = tuple(col for col in df.columns if 'value' in col)
+    count_columns = tuple(col for col in df.columns if 'count' in col)
+
+    count = len(count_columns)
+    height_ratios = [count] + ([1] * (count - 0))
+
+    fig, axs = plt.subplots(count + 1, gridspec_kw={'height_ratios': height_ratios})
+    for column in df.columns:
+        if column == 'date':
+            continue
+        if column in value_columns:
+            axs[0].plot(df['date'], df[column], label=column)
+            axs[0].set_title('value of ledger items')
+            axs[0].yaxis.set_major_locator(MaxNLocator(integer=True, nbins=6 * 2))
+        else:
+            indx = count_columns.index(column) + 1
+            axs[indx].plot(df['date'], df[column], label='_nolegend_')
+            axs[indx].set_title(column)
+            axs[indx].yaxis.set_major_locator(MaxNLocator(integer=True, nbins=3))
+
+    fig.tight_layout()
+    fig.legend()
+    CONST_H_MUL = 2
+    height = sum(height_ratios) * CONST_H_MUL
+    fig.set_figheight(height)
+    width = 10
+    fig.set_figwidth(width)
+    return fig
 
 
 def create_append_ledger_item(quantity=0, acquired_on=0, ledger_item_name="cash", ledger_item=Cash(None)):
