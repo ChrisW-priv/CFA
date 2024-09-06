@@ -289,7 +289,7 @@ def make_pretty_plot(simulation_states: list):
             axs[indx].set_title(column)
             axs[indx].yaxis.set_major_locator(MaxNLocator(integer=True, nbins=3))
 
-    fig.tight_layout()
+    fig.tight_layout(h_pad=0)
     fig.legend()
     CONST_H_MUL = 2
     height = sum(height_ratios) * CONST_H_MUL
