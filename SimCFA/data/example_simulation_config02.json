@@ -56,16 +56,6 @@
 					"amount": "all"
 				},
 				"date_apply": "2027-01-01"
-			},
-			{
-				"name": "buy house",
-				"method": "buy",
-				"asset_id": 2,
-				"how_much": {
-					"reference": "count",
-					"amount": "1"
-				},
-				"date_apply": "2027-02-01"
 			}
 		]
 	},
@@ -126,6 +116,16 @@
 			],
 			"apply_method": "monthly",
 			"apply_day": 10
+		},
+		{
+			"name": "buy house",
+			"method": "buy",
+			"asset_id": 2,
+			"how_much": {
+				"reference": "count",
+				"amount": "1"
+			},
+			"date_apply": "2027-02-01"
 		}
 	]
 }

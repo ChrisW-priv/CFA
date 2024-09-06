@@ -18,3 +18,11 @@ def identity(x):
 
 def empty(*args, **kwargs):
     pass
+
+
+def pipe(*unary_functions):
+    def inner(value):
+        for fn in unary_functions:
+            value = fn(value)
+        return value
+    return inner

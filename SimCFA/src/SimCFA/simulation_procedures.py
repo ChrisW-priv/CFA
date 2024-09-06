@@ -218,6 +218,7 @@ def create_draw_simulation_run(access_state_fn, handle_fig):
         states = access_state_fn()
         fig = make_pretty_plot(states)
         handle_fig(fig)
+
     return inner
 
 
@@ -240,22 +241,22 @@ def process_ledger_items_on_sim_step(n_day: int, ledger_items: ledger_items_type
 
 
 def make_df_from_state_list(simulation_states: list):
-    n_days = list(map(lambda state: state['n_day'], simulation_states))
-    dates = list(map(lambda state: state['day_date'], simulation_states))
-    ledger_items_list = list(map(lambda state: state['ledger_items'], simulation_states))
+    n_days = list(map(lambda state: state["n_day"], simulation_states))
+    dates = list(map(lambda state: state["day_date"], simulation_states))
+    ledger_items_list = list(map(lambda state: state["ledger_items"], simulation_states))
     zipped = zip(n_days, ledger_items_list)
 
     applied_process = apply(process_ledger_items_on_sim_step)
     results = map(applied_process, zipped)
     df = pd.DataFrame.from_records(results)
-    value_columns = tuple(col for col in df.columns if 'value' in col)
+    value_columns = tuple(col for col in df.columns if "value" in col)
     for column in df.columns:
         if column in value_columns:
             df[column] /= 100
-    df['cash - count'] /= 100
+    df["cash - count"] /= 100
     df.fillna(0, inplace=True)
-    df['date'] = dates
-    df['date'] = pd.to_datetime(df['date'])
+    df["date"] = dates
+    df["date"] = pd.to_datetime(df["date"])
     return df
 
 
@@ -269,23 +270,23 @@ def make_pretty_plot(simulation_states: list):
     :return:
     """
     df = make_df_from_state_list(simulation_states)
-    value_columns = tuple(col for col in df.columns if 'value' in col)
-    count_columns = tuple(col for col in df.columns if 'count' in col)
+    value_columns = tuple(col for col in df.columns if "value" in col)
+    count_columns = tuple(col for col in df.columns if "count" in col)
 
     count = len(count_columns)
     height_ratios = [count] + ([1] * (count - 0))
 
-    fig, axs = plt.subplots(count + 1, gridspec_kw={'height_ratios': height_ratios})
+    fig, axs = plt.subplots(count + 1, gridspec_kw={"height_ratios": height_ratios})
     for column in df.columns:
-        if column == 'date':
+        if column == "date":
             continue
         if column in value_columns:
-            axs[0].plot(df['date'], df[column], label=column)
-            axs[0].set_title('value of ledger items')
+            axs[0].plot(df["date"], df[column], label=column)
+            axs[0].set_title("value of ledger items")
             axs[0].yaxis.set_major_locator(MaxNLocator(integer=True, nbins=6 * 2))
         else:
             indx = count_columns.index(column) + 1
-            axs[indx].plot(df['date'], df[column], label='_nolegend_')
+            axs[indx].plot(df["date"], df[column], label="_nolegend_")
             axs[indx].set_title(column)
             axs[indx].yaxis.set_major_locator(MaxNLocator(integer=True, nbins=3))
 

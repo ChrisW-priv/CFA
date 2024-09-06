@@ -14,11 +14,12 @@ def convert_int_to_date(n_day: int, start_date) -> date:
 
 
 class Simulation:
-    def __init__(self, n_days=1000, start_date=date(2025, 1, 1)):
+    def __init__(self, n_days=None, start_date=None, end_date=None, **kwargs):
         self.ledger_items = defaultdict(list)
         self.events = Events()
         self.n_days = n_days
         self.start_date = start_date
+        self.end_date = end_date
 
     def simulate(self):
         kwargs = vars(self)
