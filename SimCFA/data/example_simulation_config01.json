@@ -1,19 +1,31 @@
 {
 	"simulation_parameters": {
 		"simulation_start": "2023-01-01",
-		"start_cash": 25000
+		"simulation_end": "2045-01-01"
 	},
 	"assets": [
 		{
-			"name": "3 year bond",
+			"name": "6 year bond",
 			"ID": 1,
 			"price": 100.00,
 			"duration": {
-				"years": 3
+				"years": 6
 			},
 			"value_calc_method": {
 				"method": "compound",
-				"%year": 6.6
+				"%year": 2
+			}
+		},
+		{
+			"name": "12 year bond",
+			"ID": 1,
+			"price": 100.00,
+			"duration": {
+				"years": 12
+			},
+			"value_calc_method": {
+				"method": "compound",
+				"%year": 2.5
 			}
 		}
 	],
@@ -37,10 +49,30 @@
 			"applies_on": 10
 		}
 	],
-	"living_costs": {
-		"method": "const",
-		"value": 0,
-		"apply_duration": "monthly",
-		"applies_on": 10
-	}
+	"expenses": [
+		{
+			"method": "const",
+			"value": 0,
+			"apply_duration": "monthly",
+			"applies_on": 25
+		}
+	],
+	"events_to_start_with": [
+		{
+			"name": "acquire_cash",
+			"method": "const",
+			"value": 25000,
+			"date_apply": "2023-01-01"
+		},
+		{
+			"name": "acquire_cash",
+			"method": "step",
+			"value": [
+				{"start": "2023-01-01", "value": 500},
+				{"start": "2024-01-01", "value": 800}
+			],
+			"apply_method": "monthly",
+			"apply_day": 10
+		}
+	]
 }
