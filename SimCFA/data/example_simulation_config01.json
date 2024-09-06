@@ -14,11 +14,12 @@
 			"value_calc_method": {
 				"method": "compound",
 				"%year": 2
-			}
+			},
+			"available_until": "2041-12-31"
 		},
 		{
 			"name": "12 year bond",
-			"ID": 1,
+			"ID": 2,
 			"price": 100.00,
 			"duration": {
 				"years": 12
@@ -26,10 +27,33 @@
 			"value_calc_method": {
 				"method": "compound",
 				"%year": 2.5
-			}
+			},
+			"available_until": "2041-12-31"
 		}
 	],
-	"asset_buy_strategy": null,
+	"asset_buy_strategy": {
+		"instructions": [
+			{
+				"name": "buy 12 year",
+				"asset_id_to_buy": 2,
+				"how_much": {
+					"reference": "cash",
+					"amount": "all"
+				},
+				"date_end": "2033-12-31"
+			},
+			{
+				"name": "buy 6 year",
+				"asset_id_to_buy": 1,
+				"how_much": {
+					"reference": "cash",
+					"amount": "all"
+				},
+				"date_start": "2034-01-01",
+				"date_end": "2045-01-01"
+			}
+		]
+	},
 	"debt_handle_strategy": null,
 	"strategy_priority": "asset",
 	"incomes": [
