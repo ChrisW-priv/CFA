@@ -9,5 +9,5 @@ def main(filename: str):
 
 
 if __name__ == "__main__":
-    filename = r"C:\Users\kwatras\Projects\CFA\SimCFA\data\example_simulation_config01.json"
+    filename = r"./SimCFA/data/example_simulation_config01.json"
     main(filename)

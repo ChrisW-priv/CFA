@@ -3,8 +3,8 @@ import json
 from datetime import date
 
 import matplotlib.pyplot as plt
-from functional import identity, pipe
 
+from SimCFA.functional import identity, pipe
 from SimCFA.LedgerItem import DAYS_YEAR, three_year_bond_builder
 from SimCFA.simulation import Simulation
 from SimCFA.simulation_procedures import (
@@ -42,7 +42,7 @@ def create_handle_fig_save_to_buff():
     return save_fig_to_buffer, access_buffer
 
 
-def manual_config():
+def config1():
     income_map = [
         (date(2024, 2, 1), 4125_00),
         (date(2024, 7, 1), 5500_00),
@@ -92,6 +92,9 @@ def manual_config():
     simulation.add_event_listener_applied("simulation_ended", get_final_cash_state)
 
     simulation.simulate()
+
+
+manual_config = config1
 
 
 def load_in_json_config(filename: str):
