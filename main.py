@@ -9,5 +9,6 @@ def main(filename: str):
 
 
 if __name__ == "__main__":
-    filename = r"./SimCFA/data/example_simulation_config01.json"
-    main(filename)
+    # filename = r"./SimCFA/data/example_simulation_config01.json"
+    # main(filename)
+    main(None)

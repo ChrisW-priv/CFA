@@ -1,7 +1,7 @@
 {
 	"simulation_parameters": {
-		"simulation_start": "2023-01-01",
-		"simulation_end": "2045-01-01"
+		"start_date": "2023-01-01",
+		"end_date": "2045-01-01"
 	},
 	"assets": [
 		{
@@ -22,7 +22,7 @@
 			"price": 1000000.00,
 			"value_calc_method": {
 				"method": "const",
-				"%year": 1000000.00
+				"value": 1
 			}
 		},
 		{

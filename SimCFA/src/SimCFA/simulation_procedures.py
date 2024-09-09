@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.ticker import MaxNLocator
 
+from SimCFA.compound_interest_calculator import compound_interest_calc
 from SimCFA.events import Events
 from SimCFA.functional import apply, apply_kwarg, identity
 from SimCFA.LedgerItem import Bond, Cash, Debt, GenericBuilder, House, LedgerItemProperties, LedgerItemType
@@ -273,24 +274,41 @@ def make_pretty_plot(simulation_states: list):
     count_columns = tuple(col for col in df.columns if "count" in col)
 
     count = len(count_columns)
-    height_ratios = [count] + ([1] * (count - 0))
+    height_ratios = [count] + [count] + ([1] * (count))
 
-    fig, axs = plt.subplots(count + 1, gridspec_kw={"height_ratios": height_ratios})
+    start_date = df['date'].min()
+    diff = df['date'] - start_date
+    days = diff.dt.days
+    inflation_progress = days.apply(lambda x: compound_interest_calc(3, x/356.3))
+    inflation_progress = 2 - inflation_progress
+    df['inflation_progress'] = inflation_progress
+
+    x = df.loc[:, value_columns].sum(axis=1)
+    df['net_worth'] = x
+    df['net_worth_inflation_adjusted'] = df['net_worth'] * df['inflation_progress']
+
+    extra_plots = 2
+    fig, axs = plt.subplots(count + extra_plots, gridspec_kw={"height_ratios": height_ratios})
     for column in df.columns:
         if column == "date":
             continue
-        if column in value_columns:
+        if column in ("net_worth", "net_worth_inflation_adjusted"):
             axs[0].plot(df["date"], df[column], label=column)
-            axs[0].set_title("value of ledger items")
+            axs[0].set_title("Net worth")
             axs[0].yaxis.set_major_locator(MaxNLocator(integer=True, nbins=6 * 2))
-        else:
-            indx = count_columns.index(column) + 1
+        if column in value_columns:
+            axs[1].plot(df["date"], df[column], label=column)
+            axs[1].set_title("value of ledger items")
+            axs[1].yaxis.set_major_locator(MaxNLocator(integer=True, nbins=6 * 2))
+        if column in count_columns:
+            indx = count_columns.index(column) + extra_plots
             axs[indx].plot(df["date"], df[column], label="_nolegend_")
             axs[indx].set_title(column)
             axs[indx].yaxis.set_major_locator(MaxNLocator(integer=True, nbins=3))
 
     fig.tight_layout(h_pad=0)
-    fig.legend()
+    axs[0].legend()
+    axs[1].legend()
     CONST_H_MUL = 2
     height = sum(height_ratios) * CONST_H_MUL
     fig.set_figheight(height)
