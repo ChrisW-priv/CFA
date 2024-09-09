@@ -260,6 +260,15 @@ def make_df_from_state_list(simulation_states: list):
     return df
 
 
+def create_calculate_inflation(percent):
+    def inner(curves: dict, start_date: date, day_date: date, **kwargs):
+        diff = day_date - start_date
+        years = diff.days / 365
+        x = compound_interest_calc(percent, years)
+        curves['inflation'].append(x)
+    return inner
+
+
 def make_pretty_plot(simulation_states: list):
     """
     Makes a pretty plot that will show the value of the ledger items on the main plot
@@ -270,17 +279,14 @@ def make_pretty_plot(simulation_states: list):
     :return:
     """
     df = make_df_from_state_list(simulation_states)
+    inflation_curve = simulation_states[-1]['curves']['inflation']
     value_columns = tuple(col for col in df.columns if "value" in col)
     count_columns = tuple(col for col in df.columns if "count" in col)
 
     count = len(count_columns)
     height_ratios = [count] + [count] + ([1] * (count))
 
-    start_date = df['date'].min()
-    diff = df['date'] - start_date
-    days = diff.dt.days
-    inflation_progress = days.apply(lambda x: compound_interest_calc(3, x/356.3))
-    inflation_progress = 2 - inflation_progress
+    inflation_progress = 2 - pd.Series(inflation_curve)
     df['inflation_progress'] = inflation_progress
 
     x = df.loc[:, value_columns].sum(axis=1)

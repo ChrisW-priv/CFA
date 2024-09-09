@@ -20,6 +20,7 @@ class Simulation:
         self.n_days = n_days
         self.start_date = start_date
         self.end_date = end_date
+        self.curves = defaultdict(list)
 
     def simulate(self):
         kwargs = vars(self)

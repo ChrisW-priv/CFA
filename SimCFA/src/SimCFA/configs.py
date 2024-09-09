@@ -19,6 +19,7 @@ from SimCFA.simulation_procedures import (
     create_draw_simulation_run,
     create_simulate_monthly_cash_move,
     create_simulation_state_save,
+    create_calculate_inflation,
     get_final_cash_state,
 )
 
@@ -79,6 +80,7 @@ def config1():
     simulation.add_event_listener_applied("day_started", life_costs)
     simulation.add_event_listener_applied("day_started", house_buy)
     simulation.add_event_listener_applied("day_started", bonds_buy_on_date)
+    simulation.add_event_listener_applied("day_started", create_calculate_inflation(3))
 
     simulation.add_event_listener_applied("day_started", debt_payback_strategy)
 
