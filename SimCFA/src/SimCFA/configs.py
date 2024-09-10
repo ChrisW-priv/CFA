@@ -107,10 +107,22 @@ def load_in_json_config(filename: str):
 
 def build_simulation_from_config(config):
     # build simulation obj
-    sim_params = config["simulation_parameters"]
+    sim_params = config['simulation_parameters']
     simulation = Simulation(**sim_params)
 
+    assets_available = config['assests']
+
     # build events
+    events_to_start_with = config['events_to_start_with']
+    for event in events_to_start_with:
+        name = event['name']
+        method = event['method']
+        value = event['value']
+        if method == 'const':
+            ...  # value is const, build event and continue
+        if method == 'step':
+            for step_date, step_value in value:
+                ...
 
     return simulation
 
