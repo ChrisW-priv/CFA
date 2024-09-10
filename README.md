@@ -3,10 +3,20 @@ Project created to allow easy simulation of cash flow and total networth based o
 
 ## Start contributing
 
-```bash
+If you don't have `uv`:
+```shell
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+or 
+```powerchell
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+And then simply:
+```sh
 git clone https://github.com/ChrisW-priv/CFA.git
 cd CFA
-poetry install
+uv sync
 pre-commit install
 ```
 
