@@ -8,7 +8,7 @@ def main(filename: str):
     manual_config()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # filename = r"./SimCFA/data/example_simulation_config01.json"
     # main(filename)
     main(None)

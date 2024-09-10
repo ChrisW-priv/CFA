@@ -24,13 +24,13 @@ class Simulation:
 
     def simulate(self):
         kwargs = vars(self)
-        self.post_event("simulation_started", kwargs)
+        self.post_event('simulation_started', kwargs)
         for day in range(self.n_days):
-            kwargs["n_day"] = day
-            kwargs["day_date"] = convert_int_to_date(day, self.start_date)
-            self.post_event("day_started", kwargs)
-            self.post_event("day_ended", kwargs)
-        self.post_event("simulation_ended", kwargs)
+            kwargs['n_day'] = day
+            kwargs['day_date'] = convert_int_to_date(day, self.start_date)
+            self.post_event('day_started', kwargs)
+            self.post_event('day_ended', kwargs)
+        self.post_event('simulation_ended', kwargs)
 
     def add_event_listener_applied(self, event_type, fn):
         self.events.subscribe(event_type, apply_kwarg(fn))

@@ -81,21 +81,21 @@ class Bond(LedgerItem):
 bond_builder = GenericBuilder(Bond)
 
 year_bond_builder = (
-    bond_builder.set("percent", 6)
-    .set("duration", relativedelta(years=1))
-    .set("rebuy_cost", 99_90)
-    .set("pre_maturity_buy_back_penalty", 70)
-    .set("price", 100_00)
-    .set("capitalisation_periods", 100_00)
+    bond_builder.set('percent', 6)
+    .set('duration', relativedelta(years=1))
+    .set('rebuy_cost', 99_90)
+    .set('pre_maturity_buy_back_penalty', 70)
+    .set('price', 100_00)
+    .set('capitalisation_periods', 100_00)
 )
 
 three_year_bond_builder = (
-    bond_builder.set("percent", 6.6)
-    .set("duration", relativedelta(years=3))
-    .set("rebuy_cost", 99_90)
-    .set("pre_maturity_buy_back_penalty", 70)
-    .set("price", 100_00)
-    .set("capitalisation_periods", 1)
+    bond_builder.set('percent', 6.6)
+    .set('duration', relativedelta(years=3))
+    .set('rebuy_cost', 99_90)
+    .set('pre_maturity_buy_back_penalty', 70)
+    .set('price', 100_00)
+    .set('capitalisation_periods', 1)
 )
 
 

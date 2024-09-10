@@ -34,7 +34,7 @@ def create_handle_fig_save_to_buff():
     bio = io.BytesIO()
 
     def save_fig_to_buffer(fig):
-        fig.savefig(bio, dpi=250, format="png")
+        fig.savefig(bio, dpi=250, format='png')
         return bio
 
     def access_buffer():
@@ -74,24 +74,24 @@ def config1():
     DAYS = YEARS * DAYS_YEAR
     simulation = Simulation(DAYS, date(2023, 6, 1))
 
-    simulation.add_event_listener_applied("simulation_started", append_cash(200_000_00, 0))
+    simulation.add_event_listener_applied('simulation_started', append_cash(200_000_00, 0))
 
-    simulation.add_event_listener_applied("day_started", work_income)
-    simulation.add_event_listener_applied("day_started", life_costs)
-    simulation.add_event_listener_applied("day_started", house_buy)
-    simulation.add_event_listener_applied("day_started", bonds_buy_on_date)
-    simulation.add_event_listener_applied("day_started", create_calculate_inflation(3))
+    simulation.add_event_listener_applied('day_started', work_income)
+    simulation.add_event_listener_applied('day_started', life_costs)
+    simulation.add_event_listener_applied('day_started', house_buy)
+    simulation.add_event_listener_applied('day_started', bonds_buy_on_date)
+    simulation.add_event_listener_applied('day_started', create_calculate_inflation(3))
 
-    simulation.add_event_listener_applied("day_started", debt_payback_strategy)
+    simulation.add_event_listener_applied('day_started', debt_payback_strategy)
 
-    simulation.add_event_listener_applied("bond_buy_back", bonds_buy_back)
+    simulation.add_event_listener_applied('bond_buy_back', bonds_buy_back)
 
-    simulation.add_event_listener_applied("cash_state_negative", handle_debt_acquisition_strategy)
+    simulation.add_event_listener_applied('cash_state_negative', handle_debt_acquisition_strategy)
 
-    simulation.add_event_listener_applied("day_ended", save_state_fn)
+    simulation.add_event_listener_applied('day_ended', save_state_fn)
 
-    simulation.add_event_listener_applied("simulation_ended", draw_simulation_run)
-    simulation.add_event_listener_applied("simulation_ended", get_final_cash_state)
+    simulation.add_event_listener_applied('simulation_ended', draw_simulation_run)
+    simulation.add_event_listener_applied('simulation_ended', get_final_cash_state)
 
     simulation.simulate()
 
@@ -130,8 +130,8 @@ def build_simulation_from_config(config):
 def save_states_and_print_run(simulation):
     save_state_fn, access_state_fn = create_simulation_state_save()
     draw_simulation_run = create_draw_simulation_run(access_state_fn, show_fig)
-    simulation.add_event_listener_applied("day_ended", save_state_fn)
-    simulation.add_event_listener_applied("simulation_ended", draw_simulation_run)
+    simulation.add_event_listener_applied('day_ended', save_state_fn)
+    simulation.add_event_listener_applied('simulation_ended', draw_simulation_run)
 
 
 def execute_loaded_config(config, transform_fn=identity):
