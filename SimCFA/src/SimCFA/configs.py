@@ -1,10 +1,8 @@
 import io
-import json
 from datetime import date
 
 import matplotlib.pyplot as plt
 
-from SimCFA.functional import identity, pipe
 from SimCFA.LedgerItem import DAYS_YEAR, three_year_bond_builder
 from SimCFA.simulation import Simulation
 from SimCFA.simulation_procedures import (
@@ -27,7 +25,7 @@ from SimCFA.simulation_procedures import (
 def show_fig(fig):
     fig.show()
     plt.pause(0.01)
-    x = input()
+    _ = input()
 
 
 def create_handle_fig_save_to_buff():
@@ -99,53 +97,8 @@ def config1():
 manual_config = config1
 
 
-def load_in_json_config(filename: str):
-    with open(filename) as file:
-        obj = json.load(file)
-    return obj
-
-
-def build_simulation_from_config(config):
-    # build simulation obj
-    sim_params = config['simulation_parameters']
-    simulation = Simulation(**sim_params)
-
-    assets_available = config['assests']
-
-    # build events
-    events_to_start_with = config['events_to_start_with']
-    for event in events_to_start_with:
-        name = event['name']
-        method = event['method']
-        value = event['value']
-        if method == 'const':
-            ...  # value is const, build event and continue
-        if method == 'step':
-            for step_date, step_value in value:
-                ...
-
-    return simulation
-
-
 def save_states_and_print_run(simulation):
     save_state_fn, access_state_fn = create_simulation_state_save()
     draw_simulation_run = create_draw_simulation_run(access_state_fn, show_fig)
     simulation.add_event_listener_applied('day_ended', save_state_fn)
     simulation.add_event_listener_applied('simulation_ended', draw_simulation_run)
-
-
-def execute_loaded_config(config, transform_fn=identity):
-    process = pipe(
-        build_simulation_from_config,
-        transform_fn,
-        lambda simulation: simulation.simulate(),
-    )
-    return process(config)
-
-
-def execute_config_from_file(filepath: str, transform_fn=identity):
-    process = pipe(
-        load_in_json_config,
-        lambda config: execute_loaded_config(config, transform_fn),
-    )
-    return process(filepath)
