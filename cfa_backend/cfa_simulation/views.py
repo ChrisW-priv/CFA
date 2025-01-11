@@ -24,5 +24,5 @@ class SimulationRunView(TemplateView):
     def post(self, request, *args, **kwargs):
         simulation_id = self.kwargs.get('pk')
         simulation = get_object_or_404(SimulationConfig, pk=simulation_id)
-        result = run_simulation(simulation)
-        return JsonResponse({'status': 'success', 'result': result})
+        run_simulation(simulation)
+        return JsonResponse({'status': 'successi'})

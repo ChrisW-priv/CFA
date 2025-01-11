@@ -49,7 +49,9 @@ def add_date_guard_date_between(fn, start_date: date, end_date: date):
 
 
 def add_month_day_date_guard(fn, day_trigger: int):
-    transform_fn = lambda x: x.day
+    def transform_fn(x):
+        return x.day
+
     return add_date_guard(fn, day_trigger, eq, transform_fn)
 
 
@@ -209,7 +211,6 @@ def get_final_cash_state(ledger_items: ledger_items_type, **kwargs):
     total = 0
     for item in ledger_items['cash']:
         total += item.properties.quantity
-    total /= 100
     print(f'Total amount of cash: {total:.2f}')
 
 
@@ -249,11 +250,7 @@ def make_df_from_state_list(simulation_states: list):
     applied_process = apply(process_ledger_items_on_sim_step)
     results = map(applied_process, zipped)
     df = pd.DataFrame.from_records(results)
-    value_columns = tuple(col for col in df.columns if 'value' in col)
-    for column in df.columns:
-        if column in value_columns:
-            df[column] /= 100
-    df['cash - count'] /= 100
+    tuple(col for col in df.columns if 'value' in col)
     df.fillna(0, inplace=True)
     df['date'] = dates
     df['date'] = pd.to_datetime(df['date'])
@@ -333,7 +330,8 @@ def create_append_ledger_item(quantity=0, acquired_on=0, ledger_item_name='cash'
     return inner
 
 
-append_cash = lambda x, y=0: create_append_ledger_item(x, y)
+def append_cash(x, y=0):
+    return create_append_ledger_item(x, y)
 
 
 def create_buy_house(price: int, day_buy: date):

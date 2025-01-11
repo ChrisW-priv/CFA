@@ -24,7 +24,7 @@
 
                 const result = await response.json();
                 if (result.status === "success") {
-                    alert("Simulation run successfully! Result: " + JSON.stringify(result.result));
+                    // TODO: load-in files
                 } else {
                     alert("Simulation run failed: " + result.message);
                 }
@@ -51,6 +51,7 @@
 
     <h2>Events</h2>
     {% if events.exists %}
+        <button onclick="runSimulation()">Run Simulation</button>
         <table border="1">
             <thead>
                 <tr>
@@ -74,7 +75,6 @@
     {% else %}
         <p>No events found for this simulation.</p>
     {% endif %}
-
-    <button onclick="runSimulation()">Run Simulation</button>
+    <img src="/media/{{ simulation.pk }}.png" alt="Simulation result as image">
 </body>
 </html>
