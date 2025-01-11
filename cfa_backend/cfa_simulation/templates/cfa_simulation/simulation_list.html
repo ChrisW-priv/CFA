@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation List</title>
+</head>
+<body>
+    <h1>Simulation List</h1>
+
+    {% if simulations.exists %}
+        <ul>
+            {% for simulation in simulations %}
+                <li>
+                    <a href="/simulations/{{ simulation.id }}/run/">{{ simulation.name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No simulations available.</p>
+    {% endif %}
+</body>
+</html>

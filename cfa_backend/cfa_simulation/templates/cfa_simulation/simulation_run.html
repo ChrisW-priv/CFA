@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Run Simulation</title>
+    <script>
+        async function runSimulation() {
+            const simulationId = {{ simulation.id }};
+            try {
+                const response = await fetch(`/simulations/${simulationId}/run/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken(),
+                    },
+                });
+
+                if (!response.ok) {
+                    console.error("Error running simulation: Network response was not ok!");
+                    alert("An error occurred while running the simulation.");
+                    return
+                }
+
+                const result = await response.json();
+                if (result.status === "success") {
+                    alert("Simulation run successfully! Result: " + JSON.stringify(result.result));
+                } else {
+                    alert("Simulation run failed: " + result.message);
+                }
+            } catch (error) {
+                console.error("Error running simulation:", error);
+                alert("An error occurred while running the simulation.");
+            }
+        }
+
+        function getCSRFToken() {
+            const cookies = document.cookie.split(';');
+            for (const cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'csrftoken') {
+                    return value;
+                }
+            }
+            return '';
+        }
+    </script>
+</head>
+<body>
+    <h1>Simulation: {{ simulation.name }}</h1>
+
+    <h2>Events</h2>
+    {% if events.exists %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Event</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <td>{{ event.start_date }}</td>
+                    <td>{{ event.end_date }}</td>
+                    <td>{{ event.event }}</td>
+                    <td>{{ event.value }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No events found for this simulation.</p>
+    {% endif %}
+
+    <button onclick="runSimulation()">Run Simulation</button>
+</body>
+</html>

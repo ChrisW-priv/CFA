@@ -3,8 +3,10 @@ from enum import StrEnum, auto
 from django.db import models
 
 
-class Simulation(models.Model):
+class SimulationConfig(models.Model):
     name = models.CharField(max_length=255)
+    start_date = models.DateField()
+    end_date = models.DateField()
     include_inflation = models.BooleanField(default=False)
 
 
@@ -22,7 +24,7 @@ class ValidEvents(ValidChoicesMixin, StrEnum):
 
 
 class SimulationEvent(models.Model):
-    simulation = models.ForeignKey(Simulation, on_delete=models.CASCADE)
+    simulation = models.ForeignKey(SimulationConfig, on_delete=models.CASCADE)
     start_date = models.DateField()
     end_date = models.DateField()
     event = models.CharField(max_length=255, choices=ValidEvents.choices())

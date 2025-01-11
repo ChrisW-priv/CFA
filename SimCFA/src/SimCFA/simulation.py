@@ -15,11 +15,15 @@ def convert_int_to_date(n_day: int, start_date) -> date:
 
 class Simulation:
     def __init__(self, n_days=None, start_date=None, end_date=None, **kwargs):
+        assert n_days or (
+            start_date and end_date
+        ), 'Number of simulation days has to be passed directly or be inferable from start/end dates'
+        assert not (n_days and (start_date and end_date)), 'Either pass n_days or the start/end dates'
         self.ledger_items = defaultdict(list)
         self.events = Events()
-        self.n_days = n_days
         self.start_date = start_date
         self.end_date = end_date
+        self.n_days = n_days or (end_date - start_date).days
         self.curves = defaultdict(list)
 
     def simulate(self):
